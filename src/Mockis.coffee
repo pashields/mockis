@@ -85,6 +85,9 @@ class Mockis
 
   del: ->
     [keys, callback] = splitTwo arguments
+
+    keys = [keys] unless _.isArray keys
+
     keys = _.filter keys, (key) => @storage[key]?
     delete @storage[key] for key in keys
     callback null, _.size keys
@@ -95,7 +98,7 @@ class Mockis
   sadd: ->
     [key, mems, callback] = splitThree arguments
 
-    mems = [mems] unless mems.length?
+    mems = [mems] unless _.isArray mems
 
     @storage[key] ?= []
     startSize = _.size @storage[key]
