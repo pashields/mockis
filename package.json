@@ -1,0 +1,23 @@
+{
+  "name": "mockis",
+  "version": "0.0.1",
+  "description": "A mock of redis",
+  "dependencies": {
+    "coffee-script": "*",
+    "underscore": "1.4.x"
+  },
+  "devDependencies": {
+    "chai": "*",
+    "mocha": "*",
+    "redis": "*"
+  },
+  "keywords": [
+    "redis",
+    "mock"
+  ],
+  "license": "Apache 2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pashields/mockis.git"
+  }
+}
