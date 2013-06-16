@@ -40,7 +40,7 @@ describe 'A decent redis mock', ->
   # Set
   #############################################################################
   it 'should be able add a member to a set', (done) ->
-    redis.sadd 'a', 'b', (err, result) ->
+    redis.sadd 'a', 1, (err, result) ->
       assert not err?
       assert.equal result, 1
       done()

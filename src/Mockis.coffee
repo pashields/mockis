@@ -95,6 +95,8 @@ class Mockis
   sadd: ->
     [key, mems, callback] = splitThree arguments
 
+    mems = [mems] unless mems.length?
+
     @storage[key] ?= []
     startSize = _.size @storage[key]
     @storage[key].push mem for mem in mems
