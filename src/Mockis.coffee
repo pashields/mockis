@@ -76,7 +76,7 @@ class Mockis
   set: ->
     [key, val, callback] = splitThree arguments
 
-    @storage[key] = val
+    @storage[key] = String(val)
     callback null, "OK"
 
   get: (key, callback) ->
@@ -168,7 +168,7 @@ class Mockis
     selected = @storage[key].slice(start, stop)
     mems = _.pluck selected, "value"
     if withScores 
-      scos = _.map(selected, (elem) -> elem.score.toString())
+      scos = _.map(selected, (elem) -> String(elem.score))
       res = _.flatten _.zip(mems, scos)
     else
       res = mems
@@ -197,7 +197,7 @@ class Mockis
 
     numAdded = Number(not @storage[key][hashKey]?)
 
-    @storage[key][hashKey] = value.toString()
+    @storage[key][hashKey] = String(value)
 
     callback null, numAdded
 
@@ -212,7 +212,7 @@ class Mockis
 
     @storage[key] ?= {}
 
-    @storage[key][hashKey] = value.toString() for [hashKey, value] in fields
+    @storage[key][hashKey] = String(value) for [hashKey, value] in fields
 
     callback null, "OK"
 

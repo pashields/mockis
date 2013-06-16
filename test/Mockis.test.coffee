@@ -25,6 +25,17 @@ describe 'A decent redis mock', ->
         assert.equal result, val
         done()
 
+  it 'should do the same crazy stuff as node redis for undefined', (done) ->
+    key = "foo"
+    val = undefined
+    redis.set key, val, (err, result) ->
+      assert not err?
+      assert.equal result, "OK"
+      redis.get key, (err, result) ->
+        assert not err?
+        assert.equal result, "undefined"
+        done()
+
   it 'should be able to delete keys', (done) ->
     redis.set 'foo', '1', (err, result) ->
       redis.set 'bar', '1', (err, result) ->
