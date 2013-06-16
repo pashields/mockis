@@ -16,21 +16,26 @@ Also it doesn't support all caps commands. This is easy to fix, BUT WHY?
  * set
  * get
  * del
+
 ##### Sets
  * sadd
  * smembers
  * srem
+
 ##### Sorted Sets
  * zadd
  * zrange
  * zremrangebyscore
+ 
 ##### Hashes
  * hset
  * hget
  * hgetall
  * hmset
+
 ##### Server
  * flushall
+
 ##### Transactions
  * multi
  * exec
