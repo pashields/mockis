@@ -183,7 +183,8 @@ class Mockis
     startSize = _.size @storage[key]
 
     @storage[key] = _.filter @storage[key], (elem) ->
-      elem.score < min or elem.score > max
+      not ((elem.score >= min or (typeof min is "string" and min.toLowerCase() is "-inf")) and
+      (elem.score <= max or (typeof max is "string" and max.toLowerCase() is "inf")))
 
     callback null, startSize - _.size @storage[key]
 

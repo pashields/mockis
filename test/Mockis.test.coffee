@@ -103,7 +103,7 @@ describe 'A decent redis mock', ->
 
   it 'should be able to remove elements from a sorted set using their score', (done) ->
     redis.zadd 'a', 1, 'hi', 2, 'bye', 3, 'test', (err, result) ->
-      redis.zremrangebyscore 'a', 0, 2, (err, result) ->
+      redis.zremrangebyscore 'a', "-inf", 2, (err, result) ->
         assert not err?
         assert.equal result, 2
         redis.zrange 'a', 0, -1, (err, result) ->
