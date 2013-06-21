@@ -12,6 +12,24 @@ describe 'A decent redis mock', ->
     done()
 
   #############################################################################
+  # Key
+  #############################################################################
+  it 'should be able to expire a key', (done) ->
+    redis.set 'foo', 1, (err, result) ->
+      redis.expire 'foo', 1, (err, result) ->
+        assert not err?
+        assert.equal result, 1
+        redis.get 'foo', (err, result) ->
+          assert not err?
+          assert.equal result, 1
+          setTimeout (->
+            redis.get 'foo', (err, result) ->
+              assert not err?
+              assert.equal result, null
+              done()
+            ), 1000
+
+  #############################################################################
   # String
   #############################################################################
   it 'should be able to save and get a key', (done) ->
