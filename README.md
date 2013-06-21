@@ -12,10 +12,14 @@ Currently there is no way to have two instances of Mockis pointing at the same s
 Also it doesn't support all caps commands. This is easy to fix, BUT WHY?
 
 ### Supported Commands
+##### Keys
+ * expire
+
 ##### Strings
  * set
  * get
  * del
+ * incr
 
 ##### Sets
  * sadd
