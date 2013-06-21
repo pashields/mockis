@@ -233,7 +233,7 @@ class Mockis
     if not @storage[key]? 
       callback null, {}
     else
-      callback null, @storage[key]
+      callback null, _.clone @storage[key]
 
   #############################################################################
   # Transactions
