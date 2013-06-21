@@ -107,6 +107,13 @@ class Mockis
     delete @storage[key] for key in keys
     callback null, _.size keys
 
+  incr: ->
+    [key, callback] = splitTwo arguments
+
+    @storage[key] ?= 0
+    
+    callback null, ++@storage[key]
+
   #############################################################################
   # Set
   #############################################################################

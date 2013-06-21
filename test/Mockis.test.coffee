@@ -65,6 +65,15 @@ describe 'A decent redis mock', ->
             assert.isNull result
             done()
 
+  it 'should be able to increment keys', (done) ->
+    redis.incr 'foo', (err, result) ->
+      assert not err?
+      assert.equal result, 1
+      redis.incr 'foo', (err, result) ->
+        assert not err?
+        assert.equal result, 2
+        done()
+
   #############################################################################
   # Set
   #############################################################################
