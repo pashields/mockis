@@ -1,6 +1,6 @@
 {
   "name": "mockis",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A mock of redis",
   "dependencies": {
     "coffee-script": "*",
