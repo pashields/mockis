@@ -148,6 +148,15 @@ describe 'A decent redis mock', ->
           assert.deepEqual ['test'], result
           done()
 
+  it 'should be able to remove elements from a sorted set using by member', (done) ->
+    redis.zadd 'a', 1, 'hi', 2, 'bye', 3, 'test', (err, result) ->
+      redis.zrem 'a', 'bye', 'test', (err, numRemoved) ->
+        assert not err?
+        assert.equal numRemoved, 2
+        redis.zrange 'a', 0, -1, (err, result) ->
+          assert.deepEqual ['hi'], result
+          done()
+
   #############################################################################
   # Hash
   #############################################################################

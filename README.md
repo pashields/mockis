@@ -30,6 +30,7 @@ Also it doesn't support all caps commands. This is easy to fix, BUT WHY?
  * zadd
  * zrange
  * zremrangebyscore
+ * zrem
  
 ##### Hashes
  * hset
