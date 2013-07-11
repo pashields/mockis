@@ -29,6 +29,17 @@ describe 'A decent redis mock', ->
               done()
             ), 1000
 
+  it 'should be able to check if a key exists', (done) ->
+    redis.exists 'foo', (err, result) ->
+      assert not err?
+      assert.equal result, 0
+      redis.set 'foo', 1, (err) ->
+        assert not err?
+        redis.exists 'foo', (err, result) ->
+          assert not err?
+          assert.equal result, 1
+          done()
+
   #############################################################################
   # String
   #############################################################################

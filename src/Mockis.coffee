@@ -85,6 +85,11 @@ class Mockis
 
     callback null, res
 
+  exists: ->
+    [key, callback] = splitTwo arguments
+
+    callback null, Number(@storage[key]?)
+
   #############################################################################
   # Strings
   #############################################################################
