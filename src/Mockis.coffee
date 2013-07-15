@@ -105,6 +105,14 @@ class Mockis
       @expire key, time, (err, result) ->
         callback null, "OK"
 
+  setnx: ->
+    [key, val, callback] = splitThree arguments
+
+    ret = if @storage[key]? then 0 else 1
+    @storage[key] ?= val
+
+    callback null, ret
+
   get: (key, callback) ->
     [key, callback] = splitTwo arguments
     callback null, @storage[key] or null

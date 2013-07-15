@@ -66,7 +66,22 @@ describe 'A decent redis mock', ->
           assert not err?
           assert result is 0, "SETEX expiration didn't take"
           done()
-      setTimeout testFn, 1000
+      setTimeout testFn, 1100
+
+  it 'should be able to do not-existing set', (done) ->
+    key = "foo"
+    val = "bar"
+    valTwo = "not bar"
+    redis.set key, val, (err, result) ->
+      assert not err?
+      assert.equal result, "OK"
+      redis.setnx key, valTwo, (err, result) ->
+        assert not err?
+        assert.equal result, 0
+        redis.get key, (err, result) ->
+          assert not err?
+          assert result isnt valTwo
+          done()
 
   it 'should do the same crazy stuff as node redis for undefined', (done) ->
     key = "foo"
