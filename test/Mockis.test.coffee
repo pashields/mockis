@@ -54,6 +54,20 @@ describe 'A decent redis mock', ->
         assert.equal result, val
         done()
 
+  it 'should be able to set and expire a key in one command', (done) ->
+    key = "foo"
+    val = "bar"
+    duration = 1
+    redis.setex key, duration, val, (err, result) ->
+      assert not err?
+      assert.equal result, "OK"
+      testFn = ->
+        redis.exists key, (err, result) ->
+          assert not err?
+          assert result is 0, "SETEX expiration didn't take"
+          done()
+      setTimeout testFn, 1000
+
   it 'should do the same crazy stuff as node redis for undefined', (done) ->
     key = "foo"
     val = undefined

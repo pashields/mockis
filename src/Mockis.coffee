@@ -99,6 +99,12 @@ class Mockis
     @storage[key] = String(val)
     callback null, "OK"
 
+  setex: ->
+    [key, time, val, callback] = splitFour arguments
+    @set key, val, (err, result) =>
+      @expire key, time, (err, result) ->
+        callback null, "OK"
+
   get: (key, callback) ->
     [key, callback] = splitTwo arguments
     callback null, @storage[key] or null
