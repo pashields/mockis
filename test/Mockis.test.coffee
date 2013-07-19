@@ -239,3 +239,25 @@ describe 'A decent redis mock', ->
       assert not err?
       assert.deepEqual result, ["OK", "OK"]
       done()
+
+  it 'should be able to use watch to guarantee atomicity', (done) ->
+    redis.set 'a', 1, (err, result) ->
+      assert not err?
+      redis.watch 'a', (err, result) ->
+        assert not err?
+        redis.set 'a', 2, (err, result) ->
+          redis.multi().get('a').exec (err, result) ->
+            assert not err?
+            assert.isNull result, "Watch before exec didn't fail"
+            done()
+
+  it 'should be able to use watch when it is unrelated', (done) ->
+    redis.set 'a', 1, (err, result) ->
+      assert not err?
+      redis.watch 'b', (err, result) ->
+        assert not err?
+        redis.set 'a', 2, (err, result) ->
+          redis.multi().get('a').exec (err, result) ->
+            assert not err?
+            assert.deepEqual result, ['2'], "Watch failed when it shouldn't have"
+            done()

@@ -39,10 +39,21 @@ class Multi
       @buffer.push op
       @
 
+  watchesAreSafe: ->
+    _.all @mockis.watchList, (val, key) =>
+      return _.isEqual val, (@mockis.storage[key] or null)
+
   discard: ->
     @buffer = []
 
   exec: (callback) ->
+    watchesAreSafe = @watchesAreSafe()
+
+    # Clear watch list
+    @mockis.watchList = {}
+
+    return callback null, null unless watchesAreSafe
+
     bufferIterator = =>
       i = 0
       {next: => @buffer[i++]}
@@ -69,6 +80,7 @@ class Mockis
 
   constructor: ->
     @storage = {}
+    @watchList = {}
 
   #############################################################################
   # Key
@@ -294,6 +306,13 @@ class Mockis
   #############################################################################
   multi: ->
     new Multi(@)
+
+  watch: ->
+    [key, callback] = splitTwo arguments
+
+    @watchList[key] ?= @storage[key] or null
+
+    callback null, "OK"
 
   #############################################################################
   # Server

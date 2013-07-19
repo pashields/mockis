@@ -48,6 +48,7 @@ Also it doesn't support all caps commands. This is easy to fix, BUT WHY?
  * multi
  * exec
  * discard
+ * watch
 
 ### Contribution
 Contributions are totes welcome. When possible, please submit a PR for each command. This isn't a requirement, but it can streamline reviewing them.
