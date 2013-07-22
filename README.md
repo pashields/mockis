@@ -32,6 +32,7 @@ Also it doesn't support all caps commands. This is easy to fix, BUT WHY?
 ##### Sorted Sets
  * zadd
  * zrange
+ * zrevrange
  * zremrangebyscore
  * zrem
  

@@ -204,9 +204,7 @@ class Mockis
 
     callback null, _.size(@storage[key]) - startSize
 
-  zrange: ->
-    [key, args, callback] = splitThree arguments
-
+  _zrange: (key, args, callback, orderingFn) ->
     return callback null, [] if not @storage[key]?
 
     if _.size(args) is 2
@@ -222,6 +220,8 @@ class Mockis
       stop = if stop is -1 then undefined else _.size(@storage[key]) + ++stop
 
     selected = @storage[key].slice(start, stop)
+    selected = orderingFn(selected) if orderingFn?
+
     mems = _.pluck selected, "value"
     if withScores 
       scos = _.map(selected, (elem) -> String(elem.score))
@@ -230,6 +230,14 @@ class Mockis
       res = mems
 
     callback null, res
+
+  zrange: ->
+    [key, args, callback] = splitThree arguments
+    @_zrange key, args, callback
+
+  zrevrange: ->
+    [key, args, callback] = splitThree arguments
+    @_zrange key, args, callback, (x) -> _.clone(x).reverse()
 
   zremrangebyscore: ->
     [key, min, max, callback] = splitFour arguments

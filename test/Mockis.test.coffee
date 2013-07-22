@@ -179,6 +179,19 @@ describe 'A decent redis mock', ->
         assert.deepEqual ['hi', 'bye', 'test'], result
         done()
 
+  it 'should return a "reversed" empty list for a range on an empty sorted set', (done) ->
+    redis.zrevrange 'b', 0, -1, (err, result) ->
+      assert not err?
+      assert.deepEqual [], result
+      done()
+
+  it 'should return the correct list for a range on a sorted set in reverse', (done) ->
+    redis.zadd 'a', 1, 'hi', 2, 'bye', 3, 'test', (err, result) ->
+      redis.zrevrange 'a', 0, -1, (err, result) ->
+        assert not err?
+        assert.deepEqual ['test', 'bye', 'hi'], result
+        done()
+
   it 'should be able to remove elements from a sorted set using their score', (done) ->
     redis.zadd 'a', 1, 'hi', 2, 'bye', 3, 'test', (err, result) ->
       redis.zremrangebyscore 'a', "-inf", 2, (err, result) ->
