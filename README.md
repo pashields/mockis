@@ -35,6 +35,7 @@ Also it doesn't support all caps commands. This is easy to fix, BUT WHY?
  * zrevrange
  * zremrangebyscore
  * zrem
+ * zremrangebyrank
  
 ##### Hashes
  * hset

@@ -192,6 +192,15 @@ describe 'A decent redis mock', ->
         assert.deepEqual ['test', 'bye', 'hi'], result
         done()
 
+  it 'should be able to remove elements from a sorted set using their rank', (done) ->
+    redis.zadd 'a', 1, 'hi', 2, 'bye', 3, 'test', (err, result) ->
+      redis.zremrangebyrank 'a', -2, -2, (err, result) ->
+        assert not err?
+        assert.equal result, 1
+        redis.zrange 'a', 0, -1, (err, result) ->
+          assert.deepEqual ['hi', 'test'], result
+          done()
+
   it 'should be able to remove elements from a sorted set using their score', (done) ->
     redis.zadd 'a', 1, 'hi', 2, 'bye', 3, 'test', (err, result) ->
       redis.zremrangebyscore 'a', "-inf", 2, (err, result) ->

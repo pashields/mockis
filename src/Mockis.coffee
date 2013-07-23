@@ -215,7 +215,7 @@ class Mockis
     withScores = withScores? and withScores.toUpperCase() is 'WITHSCORES'
 
     if start < 0 
-      start = _.size(@storage[key]) + ++start
+      start = _.size(@storage[key]) + start
     if stop < 0
       stop = if stop is -1 then undefined else _.size(@storage[key]) + ++stop
 
@@ -251,6 +251,17 @@ class Mockis
       (elem.score <= max or (typeof max is "string" and max.toLowerCase() is "inf")))
 
     callback null, startSize - _.size @storage[key]
+
+  zremrangebyrank: ->
+    [key, start, stop, callback] = splitFour arguments
+
+    return 0 unless @storage[key]?
+
+    @_zrange key, [start, stop], (err, elemsToRemove) =>
+      startSize = _.size @storage[key]
+      @storage[key] = _.filter @storage[key], (elem) ->
+        not _.contains elemsToRemove, elem.value
+      callback null, startSize - _.size @storage[key]
 
   zrem: ->
     [key, args, callback] = splitThree arguments
