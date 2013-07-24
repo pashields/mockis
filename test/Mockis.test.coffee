@@ -283,3 +283,15 @@ describe 'A decent redis mock', ->
             assert not err?
             assert.deepEqual result, ['2'], "Watch failed when it shouldn't have"
             done()
+
+  it 'should be able to unwatch a key', (done) ->
+    redis.watch 'a', (err, result) ->
+      assert not err?
+      redis.set 'a', 1, (err, result) ->
+        assert not err?
+        redis.unwatch (err, result) ->
+          assert not err?
+          redis.multi().get('a').exec (err, result) ->
+            assert not err?
+            assert.deepEqual result, ['1'], "Watch failed when it shouldn't have"
+            done()
