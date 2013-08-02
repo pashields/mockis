@@ -23,6 +23,8 @@ Also it doesn't support all caps commands. This is easy to fix, BUT WHY?
  * get
  * del
  * incr
+ * mget
+ * mset
 
 ##### Sets
  * sadd
@@ -36,7 +38,7 @@ Also it doesn't support all caps commands. This is easy to fix, BUT WHY?
  * zremrangebyscore
  * zrem
  * zremrangebyrank
- 
+
 ##### Hashes
  * hset
  * hget

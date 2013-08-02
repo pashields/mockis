@@ -3,7 +3,7 @@ _ = require 'underscore'
 argsToArray = (rawArgs) ->
   len  = rawArgs.length
   args = new Array(len)
-  args[i] = rawArgs[i] for i in [0...len]  
+  args[i] = rawArgs[i] for i in [0...len]
 
   _.flatten args
 
@@ -12,14 +12,14 @@ argSplitter = (numChunks, rawArgs) ->
 
   return args if _.size(args) is numChunks
 
-  splitArgs = _.take args, numChunks-2 
-  splitArgs.push args.slice numChunks-2, _.size(args) - 1 
+  splitArgs = _.take args, numChunks-2
+  splitArgs.push args.slice numChunks-2, _.size(args) - 1
   splitArgs.push _.last args
   splitArgs
 
 chunk = (chunkSize, arr) ->
   arr.slice i, i + chunkSize for i in [0..._.size(arr)] by chunkSize
-  
+
 splitTwo   = _.partial argSplitter, 2
 splitThree = _.partial argSplitter, 3
 splitFour  = _.partial argSplitter, 4
@@ -111,6 +111,13 @@ class Mockis
     @storage[key] = String(val)
     callback null, "OK"
 
+  mset: ->
+    [pairs, callback] = splitTwo arguments
+    pairs = chunkTwo pairs
+
+    @storage[key] = String(val) for [key, val] in pairs
+    callback null, "OK"
+
   setex: ->
     [key, time, val, callback] = splitFour arguments
     @set key, val, (err, result) =>
@@ -129,6 +136,12 @@ class Mockis
     [key, callback] = splitTwo arguments
     callback null, @storage[key] or null
 
+  mget: ->
+    [keys, callback] = splitTwo arguments
+
+    vals = _.map keys, (key) => @storage[key]
+    callback null, vals
+
   del: ->
     [keys, callback] = splitTwo arguments
 
@@ -142,7 +155,7 @@ class Mockis
     [key, callback] = splitTwo arguments
 
     @storage[key] ?= 0
-    
+
     callback null, ++@storage[key]
 
   #############################################################################
@@ -214,7 +227,7 @@ class Mockis
 
     withScores = withScores? and withScores.toUpperCase() is 'WITHSCORES'
 
-    if start < 0 
+    if start < 0
       start = _.size(@storage[key]) + start
     if stop < 0
       stop = if stop is -1 then undefined else _.size(@storage[key]) + ++stop
@@ -223,7 +236,7 @@ class Mockis
     selected = orderingFn(selected) if orderingFn?
 
     mems = _.pluck selected, "value"
-    if withScores 
+    if withScores
       scos = _.map(selected, (elem) -> String(elem.score))
       res = _.flatten _.zip(mems, scos)
     else
@@ -315,7 +328,7 @@ class Mockis
   hgetall: (key, callback) ->
     [key, callback] = splitTwo arguments
 
-    if not @storage[key]? 
+    if not @storage[key]?
       callback null, {}
     else
       callback null, _.clone @storage[key]

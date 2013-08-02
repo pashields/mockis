@@ -114,6 +114,15 @@ describe 'A decent redis mock', ->
         assert.equal result, 2
         done()
 
+  it 'should be able to get multiple keys at once', (done) ->
+    redis.mset "a", 1, "b", 2, (err, result) ->
+      assert not err?
+      assert.equal result, "OK"
+      redis.mget "a", "b", (err, result) ->
+        assert not err?
+        assert.deepEqual result, ["1", "2"]
+        done()
+
   #############################################################################
   # Set
   #############################################################################
