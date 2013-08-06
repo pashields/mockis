@@ -15,6 +15,7 @@ Also it doesn't support all caps commands. This is easy to fix, BUT WHY?
 ##### Keys
  * expire
  * exists
+ * ttl
 
 ##### Strings
  * set

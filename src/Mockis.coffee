@@ -81,6 +81,7 @@ class Mockis
   constructor: ->
     @storage = {}
     @watchList = {}
+    @expireList = {}
 
   #############################################################################
   # Key
@@ -90,10 +91,23 @@ class Mockis
 
     res = Number(@storage[key]?)
 
+    @expireList[key] = new Date().valueOf() + time * 1000
+
     if res is 1
       setTimeout (=>
         delete @storage[key] if @storage[key]?
+        delete @expireList[key]
         ), time * 1000
+
+    callback null, res
+
+  ttl: ->
+    [key, callback] = splitTwo arguments
+
+    res = if @expireList[key]?
+      @expireList[key] - new Date()
+    else
+      -1
 
     callback null, res
 

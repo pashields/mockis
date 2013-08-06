@@ -29,6 +29,22 @@ describe 'A decent redis mock', ->
               done()
             ), 1000
 
+  it 'should be able to get a ttl on a key', (done) ->
+    redis.ttl 'foo', (err, result) ->
+      assert not err?
+      assert.equal result, -1
+      redis.setex 'foo', 1, 1, (err, result) ->
+        assert not err?
+        redis.ttl 'foo', (err, result) ->
+          assert not err?
+          assert result > 0
+          setTimeout (->
+            redis.ttl 'foo', (err, response) ->
+              assert not err?
+              assert.equal response, -1
+              done()
+          ), 1000
+
   it 'should be able to check if a key exists', (done) ->
     redis.exists 'foo', (err, result) ->
       assert not err?
