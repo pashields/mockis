@@ -9,6 +9,8 @@ It's also very incomplete. I've implemented the basic things I need. I will try 
 ### Limitations
 Currently there is no way to have two instances of Mockis pointing at the same storage, but this shouldn't be two difficult to change.
 
+Multi currently uses recursion to execute atomically, thus very very very large multi calls can exceed the call stack. TCO would've been cool.
+
 Also it doesn't support all caps commands. This is easy to fix, BUT WHY?
 
 ### Supported Commands
