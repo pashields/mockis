@@ -153,6 +153,8 @@ class Mockis
   mget: ->
     [keys, callback] = splitTwo arguments
 
+    keys = [keys] unless _.isArray keys
+
     vals = _.map keys, (key) => @storage[key]
     callback null, vals
 

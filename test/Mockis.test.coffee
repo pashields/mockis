@@ -131,12 +131,21 @@ describe 'A decent redis mock', ->
         done()
 
   it 'should be able to get multiple keys at once', (done) ->
-    redis.mset "a", 1, "b", 2, (err, result) ->
+    redis.mset "ab", 1, "b", 2, (err, result) ->
       assert not err?
       assert.equal result, "OK"
-      redis.mget "a", "b", (err, result) ->
+      redis.mget ["ab"], (err, result) ->
         assert not err?
-        assert.deepEqual result, ["1", "2"]
+        assert.deepEqual result, ["1"]
+        done()
+
+  it 'should be able to mget one key', (done) ->
+    redis.mset "ab", 1, "b", 2, (err, result) ->
+      assert not err?
+      assert.equal result, "OK"
+      redis.mget ["ab"], (err, result) ->
+        assert not err?
+        assert.deepEqual result, ["1"]
         done()
 
   #############################################################################
