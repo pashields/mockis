@@ -2,6 +2,8 @@
 A self indulgent coffeescript mock of redis.
 
 ### Status
+[![Build Status](https://travis-ci.org/pashields/mockis.png?branch=master)](https://travis-ci.org/pashields/mockis)
+
 It works for certain things. It should match the success behavior of the node_redis library. Failure behavior may not match, but we try to do something sane.
 
 It's also very incomplete. I've implemented the basic things I need. I will try to add other things as well, but if it's missing things you need, send a PR.
