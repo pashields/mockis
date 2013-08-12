@@ -188,6 +188,16 @@ describe 'A decent redis mock', ->
           assert.deepEqual result, ['d']
           done()
 
+  it 'should be able to check if an element is a member of a set', (done) ->
+    redis.sadd 'a', ['b', 'c', 'd'], (err, result) ->
+      redis.sismember 'a', 'c', (err, result) ->
+        assert not err?
+        assert result is 1
+        redis.sismember 'a', 'e', (err, result) ->
+          assert not err?
+          assert result is 0
+          done()
+
   #############################################################################
   # Sorted Set
   #############################################################################

@@ -209,6 +209,16 @@ class Mockis
 
     callback null, numRemoved
 
+  sismember: ->
+    [key, member, callback] = splitThree arguments
+
+    return callback null, 0 unless @storage[key]?
+
+    if _.contains @storage[key], member
+      callback null, 1
+    else
+      callback null, 0
+
   #############################################################################
   # Sorted Set
   #############################################################################
