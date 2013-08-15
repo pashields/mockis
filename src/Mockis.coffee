@@ -54,27 +54,14 @@ class Multi
 
     return callback null, null unless watchesAreSafe
 
-    bufferIterator = =>
-      i = 0
-      {next: => @buffer[i++]}
-
-    iter = bufferIterator()
     results = []
-
-    callNextOp = (err) =>
-      callback err, null if err?
-      op = iter.next()
-      if not op?
-        callback err, results
-      else
-        @mockis[op.name].apply @mockis, op.args
-
     for op in @buffer
-      op.args.push (err, result) =>
-        results.push result
-        callNextOp(err)
+      op.args.push (err, result) -> [err, result]
+      [err, result] = @mockis[op.name].apply @mockis, op.args
+      return callback err if err?
+      results.push result
 
-    callNextOp()
+    callback null, results
 
 class Mockis
 
