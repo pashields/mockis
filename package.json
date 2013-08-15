@@ -1,10 +1,10 @@
 {
   "name": "mockis",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A mock of redis",
   "dependencies": {
     "coffee-script": "*",
-    "underscore": "1.4.x"
+    "underscore": ">=1.4"
   },
   "devDependencies": {
     "chai": "*",
