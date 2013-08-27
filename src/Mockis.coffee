@@ -29,7 +29,7 @@ chunkTwo = _.partial chunk, 2
 class Multi
   constructor: (@mockis) ->
     @buffer = []
-    @addFn name, fn for name, fn of Mockis.prototype
+    @addFn name, @mockis[name] for name in _.functions(@mockis)
 
   addFn: (name, fn) ->
     @[name] = =>
@@ -57,7 +57,7 @@ class Multi
     results = []
     for op in @buffer
       op.args.push (err, result) -> [err, result]
-      [err, result] = @mockis[op.name].apply @mockis, op.args
+      [err, result] = @mockis['_' + op.name].apply @mockis, op.args
       return callback err if err?
       results.push result
 
@@ -70,10 +70,23 @@ class Mockis
     @watchList = {}
     @expireList = {}
 
+    # wrap all the redis fns so that they in turn can wrap their callback in
+    # a process.nextTick. I am clear that this is insane.
+    fns = _.filter _.functions(@), (key) ->
+      key[0] is '_'
+    _.each fns, (fn) =>
+      @[fn.substr(1)] = =>
+        callback = _.last arguments
+        arguments[arguments.length - 1] = ->
+          callbackArgs = arguments
+          process.nextTick ->
+            callback.apply null, callbackArgs
+        @[fn].apply @, arguments
+
   #############################################################################
   # Key
   #############################################################################
-  expire: ->
+  _expire: ->
     [key, time, callback] = splitThree arguments
 
     res = Number(@storage[key]?)
@@ -85,10 +98,9 @@ class Mockis
         delete @storage[key] if @storage[key]?
         delete @expireList[key]
         ), time * 1000
-
     callback null, res
 
-  ttl: ->
+  _ttl: ->
     [key, callback] = splitTwo arguments
 
     res = if @expireList[key]?
@@ -98,7 +110,7 @@ class Mockis
 
     callback null, res
 
-  exists: ->
+  _exists: ->
     [key, callback] = splitTwo arguments
 
     callback null, Number(@storage[key]?)
@@ -106,26 +118,26 @@ class Mockis
   #############################################################################
   # Strings
   #############################################################################
-  set: ->
+  _set: ->
     [key, val, callback] = splitThree arguments
 
     @storage[key] = String(val)
     callback null, "OK"
 
-  mset: ->
+  _mset: ->
     [pairs, callback] = splitTwo arguments
     pairs = chunkTwo pairs
 
     @storage[key] = String(val) for [key, val] in pairs
     callback null, "OK"
 
-  setex: ->
+  _setex: ->
     [key, time, val, callback] = splitFour arguments
-    @set key, val, (err, result) =>
-      @expire key, time, (err, result) ->
+    @_set key, val, (err, result) =>
+      @_expire key, time, (err, result) ->
         callback null, "OK"
 
-  setnx: ->
+  _setnx: ->
     [key, val, callback] = splitThree arguments
 
     ret = if @storage[key]? then 0 else 1
@@ -133,11 +145,11 @@ class Mockis
 
     callback null, ret
 
-  get: (key, callback) ->
+  _get: (key, callback) ->
     [key, callback] = splitTwo arguments
     callback null, @storage[key] or null
 
-  mget: ->
+  _mget: ->
     [keys, callback] = splitTwo arguments
 
     keys = [keys] unless _.isArray keys
@@ -145,7 +157,7 @@ class Mockis
     vals = _.map keys, (key) => @storage[key]
     callback null, vals
 
-  del: ->
+  _del: ->
     [keys, callback] = splitTwo arguments
 
     keys = [keys] unless _.isArray keys
@@ -154,7 +166,7 @@ class Mockis
     delete @storage[key] for key in keys
     callback null, _.size keys
 
-  incr: ->
+  _incr: ->
     [key, callback] = splitTwo arguments
 
     @storage[key] ?= 0
@@ -164,7 +176,7 @@ class Mockis
   #############################################################################
   # Set
   #############################################################################
-  sadd: ->
+  _sadd: ->
     [key, mems, callback] = splitThree arguments
 
     mems = [mems] unless _.isArray mems
@@ -176,7 +188,7 @@ class Mockis
 
     callback null, _.size(@storage[key]) - startSize
 
-  smembers: (key, callback) ->
+  _smembers: (key, callback) ->
     [key, callback] = splitTwo arguments
     if @storage[key]?
       mems = @storage[key]
@@ -185,7 +197,7 @@ class Mockis
 
     callback null, mems
 
-  srem: ->
+  _srem: ->
     [key, mems, callback] = splitThree arguments
 
     numRemoved = 0
@@ -196,7 +208,7 @@ class Mockis
 
     callback null, numRemoved
 
-  sismember: ->
+  _sismember: ->
     [key, member, callback] = splitThree arguments
 
     return callback null, 0 unless @storage[key]?
@@ -209,7 +221,7 @@ class Mockis
   #############################################################################
   # Sorted Set
   #############################################################################
-  zadd: ->
+  _zadd: ->
     [key, mems, callback] = splitThree arguments
 
     mems = chunkTwo mems
@@ -230,7 +242,7 @@ class Mockis
 
     callback null, _.size(@storage[key]) - startSize
 
-  _zrange: (key, args, callback, orderingFn) ->
+  __zrangeHelper: (key, args, callback, orderingFn) ->
     return callback null, [] if not @storage[key]?
 
     if _.size(args) is 2
@@ -257,15 +269,15 @@ class Mockis
 
     callback null, res
 
-  zrange: ->
+  _zrange: ->
     [key, args, callback] = splitThree arguments
-    @_zrange key, args, callback
+    @__zrangeHelper key, args, callback
 
-  zrevrange: ->
+  _zrevrange: ->
     [key, args, callback] = splitThree arguments
-    @_zrange key, args, callback, (x) -> _.clone(x).reverse()
+    @__zrangeHelper key, args, callback, (x) -> _.clone(x).reverse()
 
-  zremrangebyscore: ->
+  _zremrangebyscore: ->
     [key, min, max, callback] = splitFour arguments
 
     return 0 unless @storage[key]?
@@ -278,7 +290,7 @@ class Mockis
 
     callback null, startSize - _.size @storage[key]
 
-  zremrangebyrank: ->
+  _zremrangebyrank: ->
     [key, start, stop, callback] = splitFour arguments
 
     return 0 unless @storage[key]?
@@ -289,7 +301,7 @@ class Mockis
         not _.contains elemsToRemove, elem.value
       callback null, startSize - _.size @storage[key]
 
-  zrem: ->
+  _zrem: ->
     [key, args, callback] = splitThree arguments
 
     return callback null, 0 if not @storage[key]?
@@ -305,7 +317,7 @@ class Mockis
   #############################################################################
   # Hash
   #############################################################################
-  hset: ->
+  _hset: ->
     [key, hashKey, value, callback] = splitFour arguments
     @storage[key] ?= {}
 
@@ -315,7 +327,7 @@ class Mockis
 
     callback null, numAdded
 
-  hmset: ->
+  _hmset: ->
     [key, fields, callback] = splitThree arguments
 
     # Support both object and array inputs
@@ -330,7 +342,7 @@ class Mockis
 
     callback null, "OK"
 
-  hget: ->
+  _hget: ->
     [key, hashKey, callback] = splitThree arguments
 
     if not @storage[key]? or not @storage[key][hashKey]?
@@ -338,7 +350,7 @@ class Mockis
     else
       callback null, @storage[key][hashKey]
 
-  hgetall: (key, callback) ->
+  _hgetall: (key, callback) ->
     [key, callback] = splitTwo arguments
 
     if not @storage[key]?
@@ -352,14 +364,14 @@ class Mockis
   multi: ->
     new Multi(@)
 
-  watch: ->
+  _watch: ->
     [key, callback] = splitTwo arguments
 
     @watchList[key] ?= @storage[key] or null
 
     callback null, "OK"
 
-  unwatch: (callback) ->
+  _unwatch: (callback) ->
     @watchList = {}
 
     callback null, "OK"
@@ -367,7 +379,7 @@ class Mockis
   #############################################################################
   # Server
   #############################################################################
-  flushall: (callback) ->
+  _flushall: (callback) ->
     @storage = {}
     callback null
 
