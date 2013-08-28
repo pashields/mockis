@@ -69,6 +69,7 @@ class Mockis
     @storage = {}
     @watchList = {}
     @expireList = {}
+    @expireTimers = {}
 
     # wrap all the redis fns so that they in turn can wrap their callback in
     # a process.nextTick. I am clear that this is insane.
@@ -92,11 +93,13 @@ class Mockis
     res = Number(@storage[key]?)
 
     @expireList[key] = new Date().valueOf() + time * 1000
+    clearTimeout(@expireTimers[key]) if @expireTimers[key]?
 
     if res is 1
-      setTimeout (=>
+      @expireTimers[key] = setTimeout (=>
         delete @storage[key] if @storage[key]?
         delete @expireList[key]
+        delete @expireTimers[key]
         ), time * 1000
     callback null, res
 
@@ -110,6 +113,15 @@ class Mockis
 
     callback null, res
 
+  _persist: ->
+    [key, callback] = splitTwo arguments
+    isttld = @expireTimers[key]?
+
+    clearTimeout(@expireTimers[key]) if isttld
+    delete @expireList[key]
+
+    callback null, Number(isttld)
+
   _exists: ->
     [key, callback] = splitTwo arguments
 
@@ -121,6 +133,8 @@ class Mockis
   _set: ->
     [key, val, callback] = splitThree arguments
 
+    return callback "set value must not be undefined or null, is #{val}", null unless val?
+
     @storage[key] = String(val)
     callback null, "OK"
 
@@ -128,17 +142,25 @@ class Mockis
     [pairs, callback] = splitTwo arguments
     pairs = chunkTwo pairs
 
+    if _.size(_.compact(pairs)) isnt _.size(pairs)
+      return callback "set value must not be undefined or null", null
+
     @storage[key] = String(val) for [key, val] in pairs
     callback null, "OK"
 
   _setex: ->
     [key, time, val, callback] = splitFour arguments
+
+    return callback "set value must not be undefined or null, is #{val}", null unless val?
+
     @_set key, val, (err, result) =>
       @_expire key, time, (err, result) ->
         callback null, "OK"
 
   _setnx: ->
     [key, val, callback] = splitThree arguments
+
+    return callback "set value must not be undefined or null, is #{val}", null unless val?
 
     ret = if @storage[key]? then 0 else 1
     @storage[key] ?= val
@@ -381,6 +403,10 @@ class Mockis
   #############################################################################
   _flushall: (callback) ->
     @storage = {}
+    clearTimeout timeout for timeout in @expireTimers
+    @watchList = {}
+    @expireList = {}
+    @expireTimers = {}
     callback null
 
 module.exports = Mockis

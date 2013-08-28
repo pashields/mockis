@@ -45,6 +45,16 @@ describe 'A decent redis mock', ->
               done()
           ), 1000
 
+  it 'should be able to remove a ttl on a key', (done) ->
+    redis.setex 'foo', 1, 1, (err, result) ->
+      redis.persist 'foo', (err, result) ->
+        assert not err?
+        assert result is 1
+        redis.ttl 'foo', (err, result) ->
+          assert not err?
+          assert result < 0
+          done()
+
   it 'should be able to check if a key exists', (done) ->
     redis.exists 'foo', (err, result) ->
       assert not err?
@@ -99,16 +109,12 @@ describe 'A decent redis mock', ->
           assert result isnt valTwo
           done()
 
-  it 'should do the same crazy stuff as node redis for undefined', (done) ->
+  it 'should do the same stuff as node redis for undefined', (done) ->
     key = "foo"
     val = undefined
     redis.set key, val, (err, result) ->
-      assert not err?
-      assert.equal result, "OK"
-      redis.get key, (err, result) ->
-        assert not err?
-        assert.equal result, "undefined"
-        done()
+      assert err?
+      done()
 
   it 'should be able to delete keys', (done) ->
     redis.set 'foo', '1', (err, result) ->
