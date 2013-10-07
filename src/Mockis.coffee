@@ -328,10 +328,11 @@ class Mockis
 
     return callback null, 0 if not @storage[key]?
 
+    args = [args] unless _.isArray(args)
+
     startSize = _.size @storage[key]
 
     @storage[key] = _.filter @storage[key], (elem) ->
-      debugger
       not _.contains args, elem.value
 
     callback null, startSize - _.size @storage[key]
