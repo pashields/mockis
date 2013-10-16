@@ -8,11 +8,6 @@ It works for certain things. It should match the success behavior of the node_re
 
 It's also very incomplete. I've implemented the basic things I need. I will try to add other things as well, but if it's missing things you need, send a PR.
 
-### Limitations
-Currently there is no way to have two instances of Mockis pointing at the same storage, but this shouldn't be two difficult to change.
-
-Also it doesn't support all caps commands. This is easy to fix, BUT WHY?
-
 ### Supported Commands
 ##### Keys
  * expire
@@ -53,12 +48,34 @@ Also it doesn't support all caps commands. This is easy to fix, BUT WHY?
 ##### Server
  * flushall
 
+##### Pub/sub
+ * subscribe
+ * unsubscribe
+ * publish
+
 ##### Transactions
  * multi
  * exec
  * discard
  * watch
  * unwatch
+
+### Sharing storage between mockis instances
+Multiple instances of Mockis can share the same storage like such:
+
+```coffeescript
+parent = new Mockis()
+child = new Mockis()
+parent.addChild(child)
+
+child.set "foo", "bar", ->
+  parent.get "foo", (err, result) ->
+    result is "bar" # true
+```
+
+One important note about this is that if the child already has data, it will be lost. There is no merge.
+
+Parents can have arbitrary numbers of children. The whole children of children thing can get wacky. Don't do it.
 
 ### Contribution
 Contributions are totes welcome. When possible, please submit a PR for each command. This isn't a requirement, but it can streamline reviewing them.

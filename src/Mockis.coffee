@@ -1,4 +1,5 @@
-_ = require 'underscore'
+_            = require 'underscore'
+EventEmitter = require('events').EventEmitter
 
 argsToArray = (rawArgs) ->
   len  = rawArgs.length
@@ -63,7 +64,7 @@ class Multi
 
     callback null, results
 
-class Mockis
+class Mockis extends EventEmitter
 
   constructor: ->
     @storage = {}
@@ -71,18 +72,38 @@ class Mockis
     @expireList = {}
     @expireTimers = {}
 
+    @subscriptions = []
+    @subscriptionCount = 0
+
+    @children = []
+
     # wrap all the redis fns so that they in turn can wrap their callback in
     # a process.nextTick. I am clear that this is insane.
     fns = _.filter _.functions(@), (key) ->
       key[0] is '_'
     _.each fns, (fn) =>
       @[fn.substr(1)] = =>
+        if @subscriptions.length > 0
+          return @.emit 'error', new Error("Connection in pub/sub mode, only pub/sub commands may be used")
+
         callback = _.last arguments
         arguments[arguments.length - 1] = ->
           callbackArgs = arguments
           process.nextTick ->
             callback.apply null, callbackArgs
         @[fn].apply @, arguments
+
+  setupChild: (child) ->
+    child.storage = @storage
+    child.watchList = @watchList
+    child.expireList = @expireList
+    child.expireTimers = @expireTimers
+    child
+
+  addChild: (child) ->
+    @children.push child
+    @children = _.uniq @children
+    @setupChild child
 
   #############################################################################
   # Key
@@ -400,6 +421,30 @@ class Mockis
     callback null, "OK"
 
   #############################################################################
+  # Pub/sub
+  #############################################################################
+  subscribe: ->
+    channels = argsToArray arguments
+    _.each channels, (channel) =>
+      @subscriptions.push channel
+      @subscriptions = _.uniq @subscriptions
+
+      @.emit "subscribe", channel, ++@subscriptionCount
+
+  publish: ->
+    [channel, message] = splitTwo arguments
+
+    _.each @children, (child) ->
+      child.emit "message", channel, message if _.contains(child.subscriptions, channel)
+
+  unsubscribe: ->
+    channels = argsToArray arguments
+
+    _.each channels, (channel) =>
+      @subscriptions = _.without @subscriptions, channel
+      @.emit "unsubscribe", channel, --@subscriptionCount
+
+  #############################################################################
   # Server
   #############################################################################
   _flushall: (callback) ->
@@ -408,6 +453,7 @@ class Mockis
     @watchList = {}
     @expireList = {}
     @expireTimers = {}
+    @setupChild child for child in @children
     callback null
 
 module.exports = Mockis
