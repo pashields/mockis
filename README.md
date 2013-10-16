@@ -48,7 +48,7 @@ It's also very incomplete. I've implemented the basic things I need. I will try 
 ##### Server
  * flushall
 
-##### Pub/sub
+##### Pub/sub (be sure to check out [child nodes](https://github.com/pashields/mockis#sharing-storage-between-mockis-instances))
  * subscribe
  * unsubscribe
  * publish
